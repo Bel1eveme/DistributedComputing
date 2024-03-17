@@ -1,12 +1,16 @@
-﻿namespace Forum.Api.Models.Dto;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Forum.Api.Models.Dto;
 
 public class StoryRequestDto
 {
     public long Id { get; set; }
-
-    public string Title { get; set; } = string.Empty;
     
-    public string Content { get; set; } = string.Empty;
+    [Length(2, 64, ErrorMessage = "Wrong length.")]
+    public string Title { get; set; }
+    
+    [Length(4, 2048, ErrorMessage = "Wrong length.")]
+    public string Content { get; set; }
 
     public DateTime Created { get; set; }
 

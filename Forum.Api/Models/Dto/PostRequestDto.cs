@@ -1,10 +1,13 @@
-﻿namespace Forum.Api.Models.Dto;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Forum.Api.Models.Dto;
 
 public class PostRequestDto
 {
     public int Id { get; set; }
 
-    public string Content { get; set; } = string.Empty;
+    [Length(2, 2048, ErrorMessage = "Wrong content length.")]
+    public string Content { get; set; }
     
     public Story Story { get; set; }
 }

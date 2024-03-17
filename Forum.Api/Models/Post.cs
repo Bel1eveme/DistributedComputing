@@ -1,10 +1,12 @@
-﻿namespace Forum.Api.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Forum.Api.Models;
 
 public class Post
 {
-    public int Id { get; set; }
-
-    public string Content { get; set; } = string.Empty;
+    public long Id { get; set; }
+    
+    public string Content { get; set; }
     
     public Story Story { get; set; }
 }

@@ -1,12 +1,15 @@
-﻿namespace Forum.Api.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Forum.Api.Models;
 
 public class Story
 {
     public long Id { get; set; }
-
-    public string Title { get; set; } = string.Empty;
     
-    public string Content { get; set; } = string.Empty;
+    public string Title { get; set; }
+    
+    
+    public string Content { get; set; }
 
     public DateTime Created { get; set; }
 

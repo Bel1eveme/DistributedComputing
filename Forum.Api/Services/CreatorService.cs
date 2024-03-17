@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Forum.Api.Models;
 using Forum.Api.Models.Dto;
 using Forum.Api.Repositories;
+using ValidationException = System.ComponentModel.DataAnnotations.ValidationException;
 
 namespace Forum.Api.Services;
 
@@ -11,10 +13,13 @@ public class CreatorService : ICreatorService
 
     private readonly IMapper _mapper;
 
-    public CreatorService(ICreatorRepository creatorRepository, IMapper mapper)
+    private readonly IValidator<CreatorRequestDto> _validator;
+
+    public CreatorService(ICreatorRepository creatorRepository, IMapper mapper, IValidator<CreatorRequestDto> validator)
     {
         _creatorRepository = creatorRepository;
         _mapper = mapper;
+        _validator = validator;
     }
 
     public async Task<List<CreatorResponseDto>> GetAllCreators()
@@ -26,17 +31,22 @@ public class CreatorService : ICreatorService
         return creatorsResponseDto;
     }
 
-    public async Task<CreatorResponseDto> GetCreator(long id)
+    public async Task<CreatorResponseDto?> GetCreator(long id)
     {
         var creator = await _creatorRepository.GetByIdAsync(id);
 
-        var creatorResponseDto = _mapper.Map<CreatorResponseDto>(creator);
-
-        return creatorResponseDto;
+        return creator is not null ? _mapper.Map<CreatorResponseDto>(creator) : null;
     }
 
     public async Task<CreatorResponseDto> CreateCreator(CreatorRequestDto creatorRequestDto)
     {
+        var validationResult = _validator.Validate(creatorRequestDto);
+
+        if (!validationResult.IsValid)
+        {
+            throw new ValidationException(validationResult.Errors.FirstOrDefault()?.ErrorMessage);
+        }
+        
         var creatorModel = _mapper.Map<Creator>(creatorRequestDto);
         
         var creator = await _creatorRepository.CreateAsync(creatorModel);
@@ -46,23 +56,19 @@ public class CreatorService : ICreatorService
         return creatorResponseDto;
     }
 
-    public async Task<CreatorResponseDto> UpdateCreator(CreatorRequestDto creatorRequestDto)
+    public async Task<CreatorResponseDto?> UpdateCreator(CreatorRequestDto creatorRequestDto)
     {
         var creatorModel = _mapper.Map<Creator>(creatorRequestDto);
         
         var creator = await _creatorRepository.UpdateAsync(creatorModel.Id, creatorRequestDto);
 
-        var creatorResponseDto = _mapper.Map<CreatorResponseDto>(creator);
-
-        return creatorResponseDto;
+        return creator is not null ? _mapper.Map<CreatorResponseDto>(creator) : null;
     }
 
-    public async Task<CreatorResponseDto> DeleteCreator(long id)
+    public async Task<CreatorResponseDto?> DeleteCreator(long id)
     {
         var creator = await _creatorRepository.DeleteAsync(id);
 
-        var creatorResponseDto = _mapper.Map<CreatorResponseDto>(creator);
-
-        return creatorResponseDto;
+        return creator is not null ? _mapper.Map<CreatorResponseDto>(creator) : null;
     }
 }

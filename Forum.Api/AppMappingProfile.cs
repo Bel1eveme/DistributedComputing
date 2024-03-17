@@ -17,7 +17,7 @@ public class AppMappingProfile : Profile
         CreateMap<TagRequestDto, Tag>();
         CreateMap<Tag, TagResponseDto>();
         
-        CreateMap<PostResponseDto, Post>();
+        CreateMap<PostRequestDto, Post>();
         CreateMap<Post, PostResponseDto>();
     }
 }
