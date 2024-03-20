@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Forum.Api.Controllers;
 
-[Route("api/v1.0/creator")]
+[Route("api/v1.0/creators")]
 [ApiController]
 public class CreatorController : ControllerBase
 {
@@ -29,30 +29,20 @@ public class CreatorController : ControllerBase
         return creatorResponseDto is not null ? Ok(creatorResponseDto) : Problem(statusCode: 404);
     }
     
-    [HttpPost("{id:long}")]
-    public async Task<IActionResult> Post(long id, [FromBody] CreatorRequestDto creatorRequestDto)
-    {
-        creatorRequestDto.Id = id;
-        
-        var creatorResponseDto = await _creatorService.UpdateCreator(creatorRequestDto);
-
-        return creatorResponseDto is not null ? Ok(creatorResponseDto) : Problem(statusCode: 404);
-    }
-    
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] CreatorRequestDto creatorRequestDto)
     {
-        var creatorResponseDto = await _creatorService.UpdateCreator(creatorRequestDto);
+        var creatorResponseDto = await _creatorService.CreateCreator(creatorRequestDto);
 
-        return creatorResponseDto is not null ? Ok(creatorResponseDto) : Problem(statusCode: 404);
+        return Created(Request.Path + "/" + creatorResponseDto.Id, creatorResponseDto);
     }
     
     [HttpPut]
     public async Task<IActionResult> Put([FromBody] CreatorRequestDto creatorRequestDto)
     {
-        var creatorResponseDto = await _creatorService.CreateCreator(creatorRequestDto);
+        var creatorResponseDto = await _creatorService.UpdateCreator(creatorRequestDto);
 
-        return Created(Request.Path + "/" + creatorResponseDto.Id, creatorResponseDto);
+        return creatorResponseDto is not null ? Ok(creatorResponseDto) : Problem(statusCode: 404);
     }
     
     [HttpDelete("{id:long}")]

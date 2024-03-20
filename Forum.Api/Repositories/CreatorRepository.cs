@@ -1,5 +1,4 @@
 ﻿using Forum.Api.Models;
-using Forum.Api.Models.Dto;
 using Microsoft.EntityFrameworkCore;
 
 namespace Forum.Api.Repositories;
@@ -11,35 +10,7 @@ public class CreatorRepository : ICreatorRepository
     public CreatorRepository(AppDbContext context)
     {
         _context = context;
-        
-        SeedDb();
     }
-
-    private void SeedDb()
-    {
-        var authors = new List<Creator>
-        {
-            new Creator
-            {
-                Login = "A.S.Pushkin",
-                FirstName ="Alexandr",
-                LastName ="Pushkin",
-                Password = "1111",
-            },
-            new Creator
-            {
-                Login = "M.Y.Lermontov",
-                FirstName ="Mihail",
-                LastName ="Lermontov",
-                Password = "2222",
-            },
-        };
-        
-        _context.Creators.AddRange(authors);
-        
-        _context.SaveChanges();
-    }
-    
 
     public async Task<List<Creator>> GetAllAsync()
     {
@@ -60,37 +31,37 @@ public class CreatorRepository : ICreatorRepository
     }
     
 
-    public async Task<Creator?> UpdateAsync(long id, CreatorRequestDto updatedCreator)
+    public async Task<Creator?> UpdateAsync(long id, Creator updatedCreator)
     {
-        var existingAuthor = await _context.Creators.FirstOrDefaultAsync(x => x.Id == id);
+        var existingCreator = await _context.Creators.FirstOrDefaultAsync(x => x.Id == id);
 
-        if (existingAuthor == null)
+        if (existingCreator == null)
         {
             return null;
         }
 
-        existingAuthor.FirstName = updatedCreator.FirstName;
-        existingAuthor.LastName = updatedCreator.LastName;
-        existingAuthor.Login = updatedCreator.Login;
-        existingAuthor.Password = updatedCreator.Password;
+        existingCreator.FirstName = updatedCreator.FirstName;
+        existingCreator.LastName = updatedCreator.LastName;
+        existingCreator.Login = updatedCreator.Login;
+        existingCreator.Password = updatedCreator.Password;
 
         await _context.SaveChangesAsync();
         
-        return existingAuthor;
+        return existingCreator;
     }
 
     public async Task<Creator?> DeleteAsync(long id)
     {
-        var authorModel = await _context.Creators.FirstOrDefaultAsync(x => x.Id == id);
+        var creatorModel = await _context.Creators.FirstOrDefaultAsync(x => x.Id == id);
 
-        if (authorModel == null)
+        if (creatorModel == null)
         {
             return null;
         }
 
-        _context.Creators.Remove(authorModel);
+        _context.Creators.Remove(creatorModel);
         await _context.SaveChangesAsync();
 
-        return authorModel;
+        return creatorModel;
     }
 }

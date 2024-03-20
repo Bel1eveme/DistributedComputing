@@ -12,6 +12,8 @@ public class StoryResponseDto
 
     public DateTime Modified  { get; set; }
 
+    public long CreatorId { get; set; }
+    
     public Creator Creator { get; set; }
     
     public List<TagResponseDto> Tags { get; set; }

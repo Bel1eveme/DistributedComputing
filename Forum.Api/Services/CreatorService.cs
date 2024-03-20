@@ -40,7 +40,7 @@ public class CreatorService : ICreatorService
 
     public async Task<CreatorResponseDto> CreateCreator(CreatorRequestDto creatorRequestDto)
     {
-        var validationResult = _validator.Validate(creatorRequestDto);
+        var validationResult = await _validator.ValidateAsync(creatorRequestDto);
 
         if (!validationResult.IsValid)
         {
@@ -60,7 +60,7 @@ public class CreatorService : ICreatorService
     {
         var creatorModel = _mapper.Map<Creator>(creatorRequestDto);
         
-        var creator = await _creatorRepository.UpdateAsync(creatorModel.Id, creatorRequestDto);
+        var creator = await _creatorRepository.UpdateAsync(creatorModel.Id, creatorModel);
 
         return creator is not null ? _mapper.Map<CreatorResponseDto>(creator) : null;
     }
@@ -70,5 +70,10 @@ public class CreatorService : ICreatorService
         var creator = await _creatorRepository.DeleteAsync(id);
 
         return creator is not null ? _mapper.Map<CreatorResponseDto>(creator) : null;
+    }
+
+    public async Task<bool> CreatorExists(long id)
+    {
+        return await _creatorRepository.GetByIdAsync(id) is not null;
     }
 }

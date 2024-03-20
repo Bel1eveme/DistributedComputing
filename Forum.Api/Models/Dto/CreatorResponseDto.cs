@@ -1,4 +1,6 @@
-﻿namespace Forum.Api.Models.Dto;
+﻿using System.Text.Json.Serialization;
+
+namespace Forum.Api.Models.Dto;
 
 public class CreatorResponseDto
 {
@@ -8,7 +10,9 @@ public class CreatorResponseDto
 
     public string Password { get; set; } = string.Empty;
 
+    [JsonPropertyName("firstname")]
     public string FirstName { get; set; } = string.Empty;
 
+    [JsonPropertyName("lastname")]
     public string LastName { get; set; } = string.Empty;
 }

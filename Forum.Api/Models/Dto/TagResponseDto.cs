@@ -4,7 +4,7 @@ public class TagResponseDto
 {
     public int Id { get; set; }
 
-    public string Text { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
     
-    public List<StoryResponseDto> Issues { get; set; }
+    public List<StoryResponseDto> Stories { get; set; }
 }

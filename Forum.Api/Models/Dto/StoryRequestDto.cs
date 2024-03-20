@@ -15,8 +15,8 @@ public class StoryRequestDto
     public DateTime Created { get; set; }
 
     public DateTime Modified  { get; set; }
-
-    public Creator Creator { get; set; }
     
-    public List<TagRequestDto> Tags { get; set; }
+    public long CreatorId { get; set; }
+
+    public List<TagRequestDto> Tags { get; set; } = [];
 }

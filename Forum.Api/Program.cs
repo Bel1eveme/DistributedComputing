@@ -16,10 +16,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<ICreatorRepository, CreatorRepository>();
 builder.Services.AddScoped<ICreatorService, CreatorService>();
 
+builder.Services.AddScoped<IPostRepository, PostRepository>();
+builder.Services.AddScoped<IPostService, PostService>();
+
+builder.Services.AddScoped<IStoryRepository, StoryRepository>();
+builder.Services.AddScoped<IStoryService, StoryService>();
+
+builder.Services.AddScoped<ITagRepository, TagRepository>();
+builder.Services.AddScoped<ITagService, TagService>();
+
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(AppMappingProfile));
 builder.Services.AddValidatorsFromAssemblyContaining<CreatorRequestDtoValidator>();
-
 
 var app = builder.Build();
 
@@ -37,22 +45,6 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 
-//ApplyMigration();
+//await app.MigrateDatabaseAsync();
 
 app.Run();
-
-/*
-void ApplyMigration()
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var _db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        if (_db.Database.GetPendingMigrations().Count() > 0)
-        {
-            _db.Database.Migrate();
-        }
-    }
-}
-*/
-

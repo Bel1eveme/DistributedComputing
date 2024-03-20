@@ -9,5 +9,5 @@ public class PostRequestDto
     [Length(2, 2048, ErrorMessage = "Wrong content length.")]
     public string Content { get; set; }
     
-    public Story Story { get; set; }
+    public long StoryId { get; set; }
 }

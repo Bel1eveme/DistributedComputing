@@ -1,5 +1,4 @@
 ﻿using Forum.Api.Models;
-using Forum.Api.Models.Dto;
 
 namespace Forum.Api.Repositories;
 
@@ -11,7 +10,7 @@ public interface ICreatorRepository
 
     public Task<Creator> CreateAsync(Creator creatorModel);
     
-    public Task<Creator?> UpdateAsync(long id, CreatorRequestDto updatedCreator);
+    public Task<Creator?> UpdateAsync(long id, Creator updatedCreator);
     
     public Task<Creator?> DeleteAsync(long id);
 }
