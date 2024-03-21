@@ -10,11 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-/*builder.Services.AddDbContext<AppDbContext>(
-    options => options.UseNpgsql(builder.Configuration.GetConnectionString("Db")));*/
-
 builder.Services.AddDbContext<AppDbContext>(
-    options => options.UseNpgsql(Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")));
+    options => options.UseNpgsql(builder.Configuration.GetConnectionString("DB_CONNECTION_STRING")));
+
+/*builder.Services.AddDbContext<AppDbContext>(
+    options => options.UseNpgsql(Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")));*/
 
 builder.Services.AddScoped<ICreatorRepository, CreatorRepository>();
 builder.Services.AddScoped<ICreatorService, CreatorService>();
@@ -46,12 +46,5 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.MapControllers();
-
-
-//await app.MigrateDatabaseAsync();
-
-using var scope = app.Services.CreateScope();
-await using var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-await dbContext.Database.MigrateAsync();
 
 app.Run();
