@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseUrls("http://localhost:24111");
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -32,6 +34,7 @@ builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(AppMappingProfile));
 builder.Services.AddValidatorsFromAssemblyContaining<CreatorRequestDtoValidator>();
 
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -44,7 +47,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
