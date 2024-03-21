@@ -9,23 +9,6 @@ public class AppDbContext : DbContext
     {
     }
     
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        /*modelBuilder.Entity<Creator>().HasData(
-            new Creator
-            {
-                Id = 45,
-                Login = "1231421312",
-                Password = "142142141",
-                FirstName = "William",
-                LastName = "Shakespeare"
-            }
-        );*/
-        
-        
-    }
-    
-
     public DbSet<Creator> Creators { get; init; }
 
     public DbSet<Tag> Tags { get; init; }
