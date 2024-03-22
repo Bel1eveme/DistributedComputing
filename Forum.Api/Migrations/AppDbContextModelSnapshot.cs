@@ -48,6 +48,9 @@ namespace Forum.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Login")
+                        .IsUnique();
+
                     b.ToTable("Creators");
                 });
 
@@ -101,6 +104,9 @@ namespace Forum.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatorId");
+
+                    b.HasIndex("Title")
+                        .IsUnique();
 
                     b.ToTable("Stories");
                 });

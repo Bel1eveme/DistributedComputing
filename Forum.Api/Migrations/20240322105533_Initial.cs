@@ -109,6 +109,12 @@ namespace Forum.Api.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Creators_Login",
+                table: "Creators",
+                column: "Login",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Posts_StoryId",
                 table: "Posts",
                 column: "StoryId");
@@ -117,6 +123,12 @@ namespace Forum.Api.Migrations
                 name: "IX_Stories_CreatorId",
                 table: "Stories",
                 column: "CreatorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Stories_Title",
+                table: "Stories",
+                column: "Title",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_StoryTag_TagsId",

@@ -7,23 +7,25 @@ public sealed class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
-        ApplyMigrations(this);
+        
+        
+        //ApplyMigrations(this);
     }
 
-    private void ApplyMigrations(DbContext context)
+    private void ApplyMigrations(AppDbContext context)
     {
-        if (context.Database.GetPendingMigrations().Any())
+        /*if (context.Database.GetPendingMigrations().Any())
         {
-            context.Database.Migrate();
-        }
+            context.Database.MigrateAsync();
+        }*/
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Creator>();
-        modelBuilder.Entity<Story>();
+        modelBuilder.Entity<Creator>().HasIndex(c => c.Login).IsUnique();
+        modelBuilder.Entity<Story>().HasIndex(s => s.Title).IsUnique();
         modelBuilder.Entity<Tag>();
         modelBuilder.Entity<Post>();
     }

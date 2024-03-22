@@ -12,11 +12,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scipts", "scipts", "{70E91426-364D-4F43-9ABC-81AE0B8E28B9}"
-	ProjectSection(SolutionItems) = preProject
-		C:\Users\kkk123\AppData\Roaming\JetBrains\Rider2023.3\scratches\scratch.sh = C:\Users\kkk123\AppData\Roaming\JetBrains\Rider2023.3\scratches\scratch.sh
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +31,5 @@ Global
 		{117488DF-5419-4383-83DA-0A4C7EDFD652}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{70E91426-364D-4F43-9ABC-81AE0B8E28B9} = {518E1186-1DCF-4E0D-8DFB-CB0F7FAE86C8}
 	EndGlobalSection
 EndGlobal

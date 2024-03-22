@@ -24,9 +24,12 @@ public class CreatorRepository : ICreatorRepository
 
     public async Task<Creator> CreateAsync(Creator creatorModel)
     {
-        await _context.Creators.AddAsync(creatorModel);
-        await _context.SaveChangesAsync();
+        var task1 = await _context.Creators.AddAsync(creatorModel);
+        var task = await _context.SaveChangesAsync();
 
+        if (task == 0)
+            throw new DbUpdateException(message: "Creator with this login already exists.");
+        
         return creatorModel;
     }
     

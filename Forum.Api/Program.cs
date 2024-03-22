@@ -7,8 +7,6 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("http://localhost:24111");
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -31,6 +29,7 @@ builder.Services.AddScoped<ITagRepository, TagRepository>();
 builder.Services.AddScoped<ITagService, TagService>();
 
 builder.Services.AddControllers();
+builder.Services.AddProblemDetails();
 builder.Services.AddAutoMapper(typeof(AppMappingProfile));
 builder.Services.AddValidatorsFromAssemblyContaining<CreatorRequestDtoValidator>();
 
@@ -39,7 +38,11 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-app.UseExceptionHandler("/error");
+app.UseExceptionHandler(new ExceptionHandlerOptions()
+{
+    AllowStatusCode404Response = true,
+    ExceptionHandlingPath = "/error"
+});
 
 if (app.Environment.IsDevelopment())
 {
@@ -49,5 +52,15 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 app.MapControllers();
+app.UseRouting();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    await dbContext.Database.EnsureCreatedAsync();
+
+    //await dbContext.Database.MigrateAsync();
+}
 
 app.Run();

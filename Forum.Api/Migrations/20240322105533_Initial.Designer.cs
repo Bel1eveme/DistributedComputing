@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Forum.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240321104356_Initial")]
+    [Migration("20240322105533_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -50,6 +50,9 @@ namespace Forum.Api.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Login")
+                        .IsUnique();
 
                     b.ToTable("Creators");
                 });
@@ -104,6 +107,9 @@ namespace Forum.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatorId");
+
+                    b.HasIndex("Title")
+                        .IsUnique();
 
                     b.ToTable("Stories");
                 });
