@@ -1,16 +1,9 @@
 ﻿using Forum.PostApi.Models;
+using Forum.PostApi.Repositories.Base;
 
 namespace Forum.PostApi.Repositories;
 
-public interface IPostRepository
+public interface IPostRepository : IBaseRepository<Post, long>
 {
-    public Task<List<Post>> GetAllAsync();
     
-    public Task<Post?> GetByIdAsync(long id);
-
-    public Task<Post> CreateAsync(Post postModel);
-    
-    public Task<Post?> UpdateAsync(long id, Post updatedPost);
-    
-    public Task<Post?> DeleteAsync(long id);
 }

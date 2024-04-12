@@ -9,8 +9,6 @@ public class HealthCheckController : ControllerBase
     [HttpGet]
     public IActionResult Get()
     {
-        Console.WriteLine("GG");
-        
         return Ok("We are ok");
     }
 }

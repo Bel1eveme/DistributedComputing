@@ -48,10 +48,40 @@ services:
     networks:
       - forum-api-network
     restart: unless-stopped
+  
+  forum.post.api:
+    container_name: ForumPostApiContainer
+    depends_on:
+      - cassandra-db
+    image: 'aspnetcoreapp'
+    build:
+      context: .
+      dockerfile: Forum.PostApi/Dockerfile
+    ports:
+      - '24130:24130'
+    environment:
+      ASPNETCORE_HTTP_PORTS: 24130
+      ASPNETCORE_URLS: "http://*:24130"
+    networks:
+      - forum-api-network
+  
+  cassandra-db:
+    container_name: CassandraContainer
+    image: scylladb/scylla:5.4
+    ports:
+      - 9042:9042
+    volumes:
+      - cassandra-data:/data/cassandra
+    networks:
+      - forum-post-api-network
+    restart: unless-stopped
     
 networks:
   forum-api-network:
     driver: bridge
+  forum-post-api-network:
+    driver: bridge
 volumes:
   postgres-data: null
   pgadmin:
+  cassandra-data: 

@@ -1,8 +1,7 @@
 ﻿using FluentValidation;
-using Forum.Api.Models.Dto;
 using Forum.PostApi.Models.Dto;
 
-namespace Forum.Api.Validation;
+namespace Forum.PostApi.Validation;
 
 public class PostRequestDtoValidator : AbstractValidator<PostRequestDto>
 {

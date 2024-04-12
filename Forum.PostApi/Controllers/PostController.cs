@@ -18,13 +18,13 @@ public class PostController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get()
     {
-        return Ok(await _postService.GetAllPosts());
+        return Ok(await _postService.GetAllPostsAsync());
     }
     
     [HttpGet("{id:long}")]
     public async Task<IActionResult> Get(long id)
     {
-        var postResponseDto = await _postService.GetPost(id);
+        var postResponseDto = await _postService.GetPostAsync(id);
 
         return postResponseDto is not null ? Ok(postResponseDto) : Problem(statusCode: 404);
     }
@@ -32,15 +32,15 @@ public class PostController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] PostRequestDto postRequestDto)
     {
-        var postResponseDto = await _postService.CreatePost(postRequestDto);
+        var postResponseDto = await _postService.CreatePostAsync(postRequestDto);
 
-        return Created(Request.Path + "/" + postResponseDto.Id, postResponseDto);
+        return postResponseDto is not null ? Created(Request.Path + "/" + postResponseDto.Id, postResponseDto) : Problem(statusCode: 404);
     }
     
     [HttpPut]
     public async Task<IActionResult> Put([FromBody] PostRequestDto postRequestDto)
     {
-        var postResponseDto = await _postService.UpdatePost(postRequestDto);
+        var postResponseDto = await _postService.UpdatePostAsync(postRequestDto);
 
         return postResponseDto is not null ? Ok(postResponseDto) : Problem(statusCode: 404);
     }
@@ -48,7 +48,7 @@ public class PostController : ControllerBase
     [HttpDelete("{id:long}")]
     public async Task<IActionResult> Delete(long id)
     {
-        var postResponseDto = await _postService.DeletePost(id);
+        var postResponseDto = await _postService.DeletePostAsync(id);
 
         return postResponseDto is not null ? NoContent() : Problem(statusCode: 404);
     }

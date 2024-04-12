@@ -8,36 +8,29 @@ namespace Forum.PostApi.Services;
 
 public class PostService : IPostService
 {
-    private readonly IPostRepository _postRepository;
-
-    private readonly IMapper _mapper;
+    private readonly IPostRepository _postRepository; 
 
     private readonly IValidator<PostRequestDto> _validator;
 
-    public PostService(IPostRepository postRepository, IMapper mapper, IValidator<PostRequestDto> validator)
+    public PostService(IPostRepository postRepository, IValidator<PostRequestDto> validator)
     {
         _postRepository = postRepository;
-        _mapper = mapper;
         _validator = validator;
     }
 
-    public async Task<List<PostResponseDto>> GetAllPosts()
+    public async Task<IEnumerable<PostResponseDto>> GetAllPostsAsync()
     {
-        var posts = await _postRepository.GetAllAsync();
-
-        var postResponseDto = _mapper.Map<List<PostResponseDto>>(posts);
-
-        return postResponseDto;
+        return (await _postRepository.GetAllAsync()).Select(MapperHelper.PostToDto);
     }
 
-    public async Task<PostResponseDto?> GetPost(long id)
+    public async Task<PostResponseDto?> GetPostAsync(long id)
     {
         var post = await _postRepository.GetByIdAsync(id);
-
-        return post is not null ? _mapper.Map<PostResponseDto>(post) : null;
+        
+        return post is not null ? MapperHelper.PostToDto(post) : null;
     }
 
-    public async Task<PostResponseDto> CreatePost(PostRequestDto postRequestDto)
+    public async Task<PostResponseDto?> CreatePostAsync(PostRequestDto postRequestDto)
     {
         var validationResult = await _validator.ValidateAsync(postRequestDto);
 
@@ -46,28 +39,26 @@ public class PostService : IPostService
             throw new ValidationException(validationResult.Errors.FirstOrDefault()?.ErrorMessage);
         }
         
-        var postModel = _mapper.Map<Post>(postRequestDto);
+        var postModel = MapperHelper.DtoToPost(postRequestDto);
         
-        var post = await _postRepository.CreateAsync(postModel);
+        var post = await _postRepository.AddAsync(postModel);
 
-        var postResponseDto = _mapper.Map<PostResponseDto>(post);
-
-        return postResponseDto;
+        return post is not null ? MapperHelper.PostToDto(post) : null;
     }
 
-    public async Task<PostResponseDto?> UpdatePost(PostRequestDto postRequestDto)
+    public async Task<PostResponseDto?> UpdatePostAsync(PostRequestDto postRequestDto)
     {
-        var postModel = _mapper.Map<Post>(postRequestDto);
+        var postModel = MapperHelper.DtoToPost(postRequestDto);
         
-        var post = await _postRepository.UpdateAsync(postModel.Id, postModel);
+        var post = await _postRepository.UpdateAsync(postModel);
 
-        return post is not null ? _mapper.Map<PostResponseDto>(post) : null;
+        return post is not null ? MapperHelper.PostToDto(post) : null;
     }
 
-    public async Task<PostResponseDto?> DeletePost(long id)
+    public async Task<PostResponseDto?> DeletePostAsync(long id)
     {
         var post = await _postRepository.DeleteAsync(id);
 
-        return post is not null ? _mapper.Map<PostResponseDto>(post) : null;
+        return post is not null ? MapperHelper.PostToDto(post) : null;
     }
 }

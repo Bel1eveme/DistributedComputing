@@ -71,9 +71,4 @@ public class CreatorService : ICreatorService
 
         return creator is not null ? _mapper.Map<CreatorResponseDto>(creator) : null;
     }
-
-    public async Task<bool> CreatorExists(long id)
-    {
-        return await _creatorRepository.GetByIdAsync(id) is not null;
-    }
 }

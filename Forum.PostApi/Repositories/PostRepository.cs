@@ -1,63 +1,41 @@
-﻿using Forum.PostApi.Models;
+﻿using Cassandra.Data.Linq;
+using Cassandra.Mapping;
+using Forum.PostApi.DbProvider;
+using Forum.PostApi.Models;
+using Forum.PostApi.Repositories.Base;
 
 namespace Forum.PostApi.Repositories;
 
 public class PostRepository : IPostRepository
 {
-    private readonly AppDbContext _context;
-
-    public PostRepository(AppDbContext context)
+    private readonly IBaseRepository<Post, long> _baseRepository;
+    public PostRepository(IBaseRepository<Post, long> baseRepository)
     {
-        _context = context;
-    }
-
-    public async Task<List<Post>> GetAllAsync()
-    {
-        return await _context.Posts.ToListAsync();
+        _baseRepository = baseRepository;
     }
 
     public async Task<Post?> GetByIdAsync(long id)
     {
-        return await _context.Posts.FindAsync(id);
+        return await _baseRepository.GetByIdAsync(id);
     }
 
-    public async Task<Post> CreateAsync(Post postModel)
+    public async Task<IEnumerable<Post>> GetAllAsync()
     {
-        await _context.Posts.AddAsync(postModel);
-        await _context.SaveChangesAsync();
-
-        return postModel;
+        return await _baseRepository.GetAllAsync();
     }
-    
 
-    public async Task<Post?> UpdateAsync(long id, Post updatedPost)
+    public async Task<Post?> AddAsync(Post entity)
     {
-        var existingPost = await _context.Posts.FirstOrDefaultAsync(x => x.Id == id);
+        return await _baseRepository.AddAsync(entity);
+    }
 
-        if (existingPost == null)
-        {
-            return null;
-        }
-        
-        existingPost.Content = updatedPost.Content;
-
-        await _context.SaveChangesAsync();
-        
-        return existingPost;
+    public async Task<Post?> UpdateAsync(Post entity)
+    {
+        return await _baseRepository.UpdateAsync(entity);
     }
 
     public async Task<Post?> DeleteAsync(long id)
     {
-        var postModel = await _context.Posts.FirstOrDefaultAsync(x => x.Id == id);
-
-        if (postModel == null)
-        {
-            return null;
-        }
-
-        _context.Posts.Remove(postModel);
-        await _context.SaveChangesAsync();
-
-        return postModel;
+        return await _baseRepository.DeleteAsync(id);
     }
 }

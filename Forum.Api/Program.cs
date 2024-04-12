@@ -38,7 +38,9 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-app.UseExceptionHandler(new ExceptionHandlerOptions()
+app.UseRouting();
+
+app.UseExceptionHandler(new ExceptionHandlerOptions
 {
     AllowStatusCode404Response = true,
     ExceptionHandlingPath = "/error"
@@ -50,17 +52,21 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.MapGet("/test-error", () => {
+    throw new Exception("This is a test exception.");
+});
+
 //app.UseHttpsRedirection();
+
 app.MapControllers();
-app.UseRouting();
+
 
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
     await dbContext.Database.EnsureCreatedAsync();
-
-    //await dbContext.Database.MigrateAsync();
 }
+
 
 app.Run();

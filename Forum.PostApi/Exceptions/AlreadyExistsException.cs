@@ -1,4 +1,4 @@
-﻿namespace Forum.Api.Exceptions;
+﻿namespace Forum.PostApi.Exceptions;
 
 public class AlreadyExistsException : ArgumentException
 {

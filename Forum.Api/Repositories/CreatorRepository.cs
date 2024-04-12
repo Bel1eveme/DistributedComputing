@@ -16,21 +16,23 @@ public class CreatorRepository : ICreatorRepository
     {
         return await _context.Creators.ToListAsync();
     }
-
+    
+    
     public async Task<Creator?> GetByIdAsync(long id)
     {
-        return await _context.Creators.FindAsync(id);
+        var result = await _context.Creators.FindAsync(id);
+        
+        return result;
     }
 
     public async Task<Creator> CreateAsync(Creator creatorModel)
     {
-        var task1 = await _context.Creators.AddAsync(creatorModel);
-        var task = await _context.SaveChangesAsync();
-
-        if (task == 0)
-            throw new DbUpdateException(message: "Creator with this login already exists.");
         
-        return creatorModel;
+        var result = await _context.Creators.AddAsync(creatorModel);
+        
+        await _context.SaveChangesAsync();
+        
+        return result.Entity;
     }
     
 

@@ -1,10 +1,12 @@
-﻿namespace Forum.PostApi.Models.Dto;
+﻿using Forum.PostApi.Models.Base;
 
-public class PostResponseDto
+namespace Forum.PostApi.Models.Dto;
+
+public class PostResponseDto : BaseModel<long>
 {
-    public Guid Id { get; set; }
-
-    public string Content { get; set; } = string.Empty;
+    public String Country { get; set; }
     
-    public Guid StoryId { get; set; }
+    public long StoryId { get; set; }
+    
+    public string? Content { get; set; }
 }

@@ -13,6 +13,4 @@ public interface ICreatorService
     public Task<CreatorResponseDto?> UpdateCreator(CreatorRequestDto creatorRequestDto); 
     
     public Task<CreatorResponseDto?> DeleteCreator(long id); 
-    
-    public Task<bool> CreatorExists(long id);
 }
