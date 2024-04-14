@@ -24,6 +24,9 @@ public class PostService : IPostService
 
     public async Task<List<PostResponseDto>> GetAllPosts()
     {
+        //generate id
+        // var posts = await produce
+        
         var posts = await _postRepository.GetAllAsync();
 
         var postResponseDto = _mapper.Map<List<PostResponseDto>>(posts);

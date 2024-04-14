@@ -21,29 +21,25 @@ public class BackgroundKafkaConsumer<TK, TV> : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using (var scope = _serviceScopeFactory.CreateScope())
+        using var scope = _serviceScopeFactory.CreateScope();
+        _handler = scope.ServiceProvider.GetRequiredService<IKafkaHandler<TK, TV>>();
+
+        var builder = new ConsumerBuilder<TK, TV>(_config).SetValueDeserializer(new Deserializer<TV>());
+
+        using IConsumer<TK, TV> consumer = builder.Build();
+        consumer.Subscribe(_config.Topic);
+
+        while (!stoppingToken.IsCancellationRequested)
         {
-            _handler = scope.ServiceProvider.GetRequiredService<IKafkaHandler<TK, TV>>();
+            var result = consumer.Consume(TimeSpan.FromMilliseconds(1000));
 
-            var builder = new ConsumerBuilder<TK, TV>(_config).SetValueDeserializer(new Deserializer<TV>());
-
-            using (IConsumer<TK, TV> consumer = builder.Build())
+            if (result != null)
             {
-                consumer.Subscribe(_config.Topic);
+                await _handler.HandleAsync(result.Message.Key, result.Message.Value);
 
-                while (!stoppingToken.IsCancellationRequested)
-                {
-                    var result = consumer.Consume(TimeSpan.FromMilliseconds(1000));
+                consumer.Commit(result);
 
-                    if (result != null)
-                    {
-                        await _handler.HandleAsync(result.Message.Key, result.Message.Value);
-
-                        consumer.Commit(result);
-
-                        consumer.StoreOffset(result);
-                    }
-                }
+                consumer.StoreOffset(result);
             }
         }
     }
