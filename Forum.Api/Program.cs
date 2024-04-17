@@ -1,5 +1,10 @@
+using System.Collections.Concurrent;
 using FluentValidation;
 using Forum.Api;
+using Forum.Api.Kafka;
+using Forum.Api.Kafka.Consumer;
+using Forum.Api.Kafka.Messages;
+using Forum.Api.Models.Dto;
 using Forum.Api.Repositories;
 using Forum.Api.Services;
 using Forum.Api.Validation;
@@ -33,6 +38,18 @@ builder.Services.AddProblemDetails();
 builder.Services.AddAutoMapper(typeof(AppMappingProfile));
 builder.Services.AddValidatorsFromAssemblyContaining<CreatorRequestDtoValidator>();
 
+builder.Services.AddKafkaMessageBus();
+builder.Services.AddKafkaProducer<string, KafkaMessage>(config => {
+    config.Topic = "in-topic";
+    config.BootstrapServers = "localhost:9092";
+});
+builder.Services.AddSingleton(new ConcurrentDictionary<string, TaskCompletionSource<IEnumerable<PostKafkaResponseDto>>>());
+builder.Services.AddKafkaConsumer<string, KafkaMessage, PostKafkaHandler>(p =>
+{
+    p.Topic = "out-topic";
+    p.GroupId = "posts-group";
+    p.BootstrapServers = "localhost:9092";
+});
 
 var app = builder.Build();
 
