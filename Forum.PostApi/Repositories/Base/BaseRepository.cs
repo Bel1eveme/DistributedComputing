@@ -12,10 +12,6 @@ public class BaseRepository<T, TKey> : IBaseRepository<T, TKey> where T : BaseMo
     public BaseRepository(ICassandraProvider cassandraProvider)
     {
         _mapper = new Mapper(cassandraProvider.GetSession());
-
-        List<string> арины = new();
-
-        арины.AsParallel();
     }
 
     public async Task<T?> GetByIdAsync(TKey id)

@@ -1,11 +1,13 @@
 ﻿using System.Collections.Concurrent;
 using AutoMapper;
 using FluentValidation;
+using Forum.Api.Exceptions;
 using Forum.Api.Kafka;
 using Forum.Api.Kafka.Messages;
 using Forum.Api.Models;
 using Forum.Api.Models.Dto;
 using Forum.Api.Repositories;
+using Newtonsoft.Json;
 using ValidationException = System.ComponentModel.DataAnnotations.ValidationException;
 
 namespace Forum.Api.Services;
@@ -20,11 +22,11 @@ public class PostService : IPostService
 
     private readonly IKafkaMessageBus<string, KafkaMessage> _messageBus;
     
-    private readonly ConcurrentDictionary<string, TaskCompletionSource<IEnumerable<PostResponseDto>>> _responseCompletionSources;
+    private readonly ConcurrentDictionary<string, TaskCompletionSource<KafkaMessage>> _responseCompletionSources;
 
     public PostService(IPostRepository postRepository, IMapper mapper,
         IValidator<PostRequestDto> validator, IKafkaMessageBus<string, KafkaMessage> messageBus,
-        ConcurrentDictionary<string, TaskCompletionSource<IEnumerable<PostResponseDto>>> responseCompletionSources)
+        ConcurrentDictionary<string, TaskCompletionSource<KafkaMessage>> responseCompletionSources)
     {
         _postRepository = postRepository;
         _mapper = mapper;
@@ -32,26 +34,11 @@ public class PostService : IPostService
         _messageBus = messageBus;
         _responseCompletionSources = responseCompletionSources;
     }
-    
-    /*public PostService(IPostRepository postRepository, IMapper mapper,
-        IValidator<PostRequestDto> validator)
-    {
-        _postRepository = postRepository;
-        _mapper = mapper;
-        _validator = validator;
-    }*/
 
     public async Task<IEnumerable<PostResponseDto>> GetAllPosts()
     {
-        /*var posts = await _postRepository.GetAllAsync();
-
-        var postResponseDto = _mapper.Map<IEnumerable<PostResponseDto>>(posts);
-
-        return postResponseDto;*/
-
         var requestKey = Guid.NewGuid().ToString();
-        
-        var tcs = new TaskCompletionSource<IEnumerable<PostResponseDto>>();
+        var tcs = new TaskCompletionSource<KafkaMessage>();
         _responseCompletionSources.TryAdd(requestKey, tcs);
 
         var message = new KafkaMessage
@@ -62,35 +49,49 @@ public class PostService : IPostService
         
         await _messageBus.PublishAsync(requestKey, message);
 
-        var postResponseDto = await tcs.Task;
-        
-        
-        
-        return postResponseDto.Select(p => new PostResponseDto
+        var kafkaMessage = await tcs.Task;
+
+        if (kafkaMessage.ErrorOccured)
         {
-            Id = p.Id,
-            StoryId = p.StoryId,
-            Content = p.Content,
-            Story = null
-        });
+            throw new KafkaException(kafkaMessage.ErrorMessage);
+        }
+        
+        var posts = JsonConvert.DeserializeObject<IEnumerable<Post>>(kafkaMessage.Data);
+        
+        return _mapper.Map<IEnumerable<PostResponseDto>>(posts);
     }
 
     public async Task<PostResponseDto?> GetPost(long id)
     {
-        //generate id
-        
-        // var posts = await produce
-        
-        var post = await _postRepository.GetByIdAsync(id);
+        var requestKey = Guid.NewGuid().ToString();
+        var tcs = new TaskCompletionSource<KafkaMessage>();
+        _responseCompletionSources.TryAdd(requestKey, tcs);
 
-        return post is not null ? _mapper.Map<PostResponseDto>(post) : null;
+        var message = new KafkaMessage
+        {
+            MessageType = MessageType.GetById,
+            Data = JsonConvert.SerializeObject(id)
+        };
+        
+        await _messageBus.PublishAsync(requestKey, message);
+
+        var kafkaMessage = await tcs.Task;
+
+        if (kafkaMessage.Data == null)
+            return null;
+        
+        if (kafkaMessage.ErrorOccured)
+        {
+            throw new KafkaException(kafkaMessage.ErrorMessage);
+        }
+        
+        var posts = JsonConvert.DeserializeObject<Post>(kafkaMessage.Data);
+        
+        return _mapper.Map<PostResponseDto>(posts);
     }
 
     public async Task<PostResponseDto> CreatePost(PostRequestDto postRequestDto)
     {
-        // check story id
-        // var posts = await produce
-        
         var validationResult = await _validator.ValidateAsync(postRequestDto);
 
         if (!validationResult.IsValid)
@@ -98,33 +99,99 @@ public class PostService : IPostService
             throw new ValidationException(validationResult.Errors.FirstOrDefault()?.ErrorMessage);
         }
         
-        var postModel = _mapper.Map<Post>(postRequestDto);
+        var requestKey = Guid.NewGuid().ToString();
+        var newId = new Random().Next();
+        postRequestDto.Id = newId;
+        var tcs = new TaskCompletionSource<KafkaMessage>();
+        _responseCompletionSources.TryAdd(requestKey, tcs);
+        var newPost = _mapper.Map<Post>(postRequestDto);
+
+        var message = new KafkaMessage
+        {
+            MessageType = MessageType.Create,
+            Data = JsonConvert.SerializeObject(newPost)
+        };
         
-        var post = await _postRepository.CreateAsync(postModel);
+        await _messageBus.PublishAsync(requestKey, message);
 
-        var postResponseDto = _mapper.Map<PostResponseDto>(post);
+        var kafkaMessage = await tcs.Task;
 
-        return postResponseDto;
+        if (kafkaMessage.Data == null)
+            throw new Exceptions.ValidationException();
+        
+        if (kafkaMessage.ErrorOccured)
+        {
+            throw new KafkaException(kafkaMessage.ErrorMessage);
+        }
+        
+        var post = JsonConvert.DeserializeObject<Post>(kafkaMessage.Data);
+        
+        return _mapper.Map<PostResponseDto>(post);
     }
 
     public async Task<PostResponseDto?> UpdatePost(PostRequestDto postRequestDto)
     {
-        // check story id
-        // var posts = await produce
-        
-        var postModel = _mapper.Map<Post>(postRequestDto);
-        
-        var post = await _postRepository.UpdateAsync(postModel.Id, postModel);
+        var validationResult = await _validator.ValidateAsync(postRequestDto);
 
-        return post is not null ? _mapper.Map<PostResponseDto>(post) : null;
+        if (!validationResult.IsValid)
+        {
+            throw new ValidationException(validationResult.Errors.FirstOrDefault()?.ErrorMessage);
+        }
+        
+        var requestKey = Guid.NewGuid().ToString();
+        var tcs = new TaskCompletionSource<KafkaMessage>();
+        _responseCompletionSources.TryAdd(requestKey, tcs);
+        var updatedPost = _mapper.Map<Post>(postRequestDto);
+
+        var message = new KafkaMessage
+        {
+            MessageType = MessageType.Update,
+            Data = JsonConvert.SerializeObject(updatedPost)
+        };
+        
+        await _messageBus.PublishAsync(requestKey, message);
+
+        var kafkaMessage = await tcs.Task;
+
+        if (kafkaMessage.Data == null)
+            return null;
+        
+        if (kafkaMessage.ErrorOccured)
+        {
+            throw new KafkaException(kafkaMessage.ErrorMessage);
+        }
+        
+        var post = JsonConvert.DeserializeObject<Post>(kafkaMessage.Data);
+        
+        return _mapper.Map<PostResponseDto>(post);
     }
 
     public async Task<PostResponseDto?> DeletePost(long id)
     {
-        // var posts = await produce
-        
-        var post = await _postRepository.DeleteAsync(id);
+        var requestKey = Guid.NewGuid().ToString();
+        var tcs = new TaskCompletionSource<KafkaMessage>();
+        _responseCompletionSources.TryAdd(requestKey, tcs);
 
-        return post is not null ? _mapper.Map<PostResponseDto>(post) : null;
+        var message = new KafkaMessage
+        {
+            MessageType = MessageType.Delete,
+            Data = JsonConvert.SerializeObject(id)
+        };
+        
+        await _messageBus.PublishAsync(requestKey, message);
+
+        var kafkaMessage = await tcs.Task;
+
+        if (kafkaMessage.Data == null)
+            return null;
+        
+        if (kafkaMessage.ErrorOccured)
+        {
+            throw new KafkaException(kafkaMessage.ErrorMessage);
+        }
+        
+        var post = JsonConvert.DeserializeObject<Post>(kafkaMessage.Data);
+        
+        return _mapper.Map<PostResponseDto>(post);
     }
 }
