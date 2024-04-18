@@ -21,30 +21,56 @@ public class CachedCreatorRepository : ICreatorRepository
     {
         var cachedCreators = await _cache.GetStringAsync("creators");
         if (!string.IsNullOrEmpty(cachedCreators))
-            return JsonSerializer.Deserialize<List<Creator>>(cachedCreators);
+            return JsonConvert.DeserializeObject<List<Creator>>(cachedCreators)!;
 
         var creators = await _creatorRepository.GetAllAsync();
-        await _cache.SetStringAsync("creators", JsonSerializer.Serialize(creators));
+        await _cache.SetStringAsync("creators", JsonConvert.SerializeObject(creators));
         return creators;
     }
 
     public async Task<Creator?> GetByIdAsync(long id)
     {
-        throw new NotImplementedException();
+        var cachedCreator = await _cache.GetStringAsync(id.ToString());
+
+        if (!string.IsNullOrEmpty(cachedCreator))
+        {
+            return JsonConvert.DeserializeObject<Creator>(cachedCreator);
+        }
+
+        var creator = await _creatorRepository.GetByIdAsync(id);
+            
+        if (creator is not null)
+            await _cache.SetStringAsync(id.ToString(), JsonConvert.SerializeObject(creator));
+
+        return creator;
     }
 
     public async Task<Creator> CreateAsync(Creator creatorModel)
     {
-        throw new NotImplementedException();
+        var creator = await _creatorRepository.CreateAsync(creatorModel);
+
+        await _cache.SetStringAsync(creatorModel.Login, JsonConvert.SerializeObject(creatorModel));
+        
+        return creator;
     }
 
     public async Task<Creator?> UpdateAsync(long id, Creator updatedCreator)
     {
-        throw new NotImplementedException();
+        await _cache.RemoveAsync(updatedCreator.Login);
+        
+        var creator = await _creatorRepository.CreateAsync(updatedCreator);
+        
+        await _cache.SetStringAsync(updatedCreator.Login, JsonConvert.SerializeObject(updatedCreator));
+
+        return creator;
     }
 
     public async Task<Creator?> DeleteAsync(long id)
     {
-        throw new NotImplementedException();
+        var creator = await _creatorRepository.DeleteAsync(id);
+            
+        await _cache.RemoveAsync(id.ToString());
+
+        return creator;
     }
 }

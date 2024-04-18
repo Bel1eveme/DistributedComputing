@@ -34,10 +34,10 @@ builder.Services.AddScoped<IStoryService, StoryService>();
 builder.Services.AddScoped<ITagRepository, TagRepository>();
 builder.Services.AddScoped<ITagService, TagService>();
 
-builder.Services.Decorate<IPostRepository, CachedPostRepository>();
-builder.Services.Decorate<ITagRepository, CachedTagRepository>();
-builder.Services.Decorate<IStoryRepository, CachedStoryRepository>();
-builder.Services.Decorate<ICreatorRepository, CachedCreatorRepository>();
+//builder.Services.Decorate<IPostRepository, CachedPostRepository>();
+//builder.Services.Decorate<ITagRepository, CachedTagRepository>();
+//builder.Services.Decorate<IStoryRepository, CachedStoryRepository>();
+//builder.Services.Decorate<ICreatorRepository, CachedCreatorRepository>();
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
