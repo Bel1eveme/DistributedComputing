@@ -54,7 +54,6 @@ services:
       
   cassandra-db:
     container_name: CassandraContainer
-    hostname: 'cassandra-db'
     image: scylladb/scylla:5.4
     ports:
       - "9042:9042"

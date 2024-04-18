@@ -16,7 +16,7 @@ public class BaseRepository<T, TKey> : IBaseRepository<T, TKey> where T : BaseMo
 
     public async Task<T?> GetByIdAsync(TKey id)
     {
-        return await _mapper.FirstOrDefaultAsync<T>($"WHERE id = {id}");
+        return await _mapper.FirstOrDefaultAsync<T>($"WHERE id = {id} ALLOW FILTERING");
     }
 
     public async Task<IEnumerable<T>> GetAllAsync()
@@ -28,7 +28,8 @@ public class BaseRepository<T, TKey> : IBaseRepository<T, TKey> where T : BaseMo
     {
         var addStatement = await _mapper.InsertIfNotExistsAsync(entity);
         
-        return addStatement.Applied? addStatement.Existing : null;
+        //return addStatement.Applied? addStatement.Existing : null;
+        return entity;
     }
 
     public async Task<T?> UpdateAsync(T entity)
@@ -38,7 +39,7 @@ public class BaseRepository<T, TKey> : IBaseRepository<T, TKey> where T : BaseMo
         if (existingEntity == null) return null;
         
         await _mapper.UpdateAsync(entity);
-        return existingEntity;
+        return entity;
     }
 
     public async Task<T?> DeleteAsync(TKey id)

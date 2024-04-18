@@ -21,25 +21,25 @@ public class PostService : IPostService
     private readonly IValidator<PostRequestDto> _validator;
 
     private readonly IKafkaMessageBus<string, KafkaMessage> _messageBus;
-    
-    private readonly ConcurrentDictionary<string, TaskCompletionSource<KafkaMessage>> _responseCompletionSources;
+
+    private readonly MessageManager<string, KafkaMessage> _messageManager;
 
     public PostService(IPostRepository postRepository, IMapper mapper,
         IValidator<PostRequestDto> validator, IKafkaMessageBus<string, KafkaMessage> messageBus,
-        ConcurrentDictionary<string, TaskCompletionSource<KafkaMessage>> responseCompletionSources)
+        MessageManager<string, KafkaMessage> messageManager)
     {
         _postRepository = postRepository;
         _mapper = mapper;
         _validator = validator;
         _messageBus = messageBus;
-        _responseCompletionSources = responseCompletionSources;
+        _messageManager = messageManager;
     }
 
     public async Task<IEnumerable<PostResponseDto>> GetAllPosts()
     {
         var requestKey = Guid.NewGuid().ToString();
         var tcs = new TaskCompletionSource<KafkaMessage>();
-        _responseCompletionSources.TryAdd(requestKey, tcs);
+        _messageManager.AddRequest(requestKey, tcs);
 
         var message = new KafkaMessage
         {
@@ -71,7 +71,7 @@ public class PostService : IPostService
     {
         var requestKey = Guid.NewGuid().ToString();
         var tcs = new TaskCompletionSource<KafkaMessage>();
-        _responseCompletionSources.TryAdd(requestKey, tcs);
+        _messageManager.AddRequest(requestKey, tcs);
 
         var message = new KafkaMessage
         {
@@ -112,10 +112,10 @@ public class PostService : IPostService
         }
         
         var requestKey = Guid.NewGuid().ToString();
-        var newId = new Random().Next();
+        var newId = new Random().NextInt64();
         postRequestDto.Id = newId;
         var tcs = new TaskCompletionSource<KafkaMessage>();
-        _responseCompletionSources.TryAdd(requestKey, tcs);
+        _messageManager.AddRequest(requestKey, tcs);
         PostKafkaDto newPost = new PostKafkaDto
         {
             Id = postRequestDto.Id,
@@ -163,7 +163,7 @@ public class PostService : IPostService
         
         var requestKey = Guid.NewGuid().ToString();
         var tcs = new TaskCompletionSource<KafkaMessage>();
-        _responseCompletionSources.TryAdd(requestKey, tcs);
+        _messageManager.AddRequest(requestKey, tcs);
         PostKafkaDto updatedPost = new PostKafkaDto
             {
                 Id = postRequestDto.Id,
@@ -204,7 +204,7 @@ public class PostService : IPostService
     {
         var requestKey = Guid.NewGuid().ToString();
         var tcs = new TaskCompletionSource<KafkaMessage>();
-        _responseCompletionSources.TryAdd(requestKey, tcs);
+        _messageManager.AddRequest(requestKey, tcs);
 
         var message = new KafkaMessage
         {

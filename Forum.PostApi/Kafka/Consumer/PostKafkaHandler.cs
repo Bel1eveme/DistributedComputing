@@ -21,8 +21,8 @@ public class PostKafkaHandler : IKafkaHandler<string, KafkaMessage>
 
     public async Task HandleAsync(string key, KafkaMessage value)
     {
-        await Console.Out.WriteLineAsync(JsonConvert.SerializeObject(JsonConvert.DeserializeObject<Post>(value.Data)));
-        KafkaMessage message = new KafkaMessage();
+        //await Console.Out.WriteLineAsync(JsonConvert.SerializeObject(JsonConvert.DeserializeObject<Post>(value.Data)));
+        KafkaMessage message;
 
         switch (value.MessageType)
         {
@@ -60,9 +60,9 @@ public class PostKafkaHandler : IKafkaHandler<string, KafkaMessage>
             {
                 try
                 {
-                    var postToFind = JsonConvert.DeserializeObject<int>(value.Data);
+                    var id = JsonConvert.DeserializeObject<long>(value.Data);
 
-                    var post = await _postService.GetPostAsync(postToFind);
+                    var post = await _postService.GetPostAsync(id);
 
                     message = new KafkaMessage
                     {
@@ -160,7 +160,7 @@ public class PostKafkaHandler : IKafkaHandler<string, KafkaMessage>
             case MessageType.Delete:
                 try
                 {
-                    var postToFind = JsonConvert.DeserializeObject<int>(value.Data);
+                    var postToFind = JsonConvert.DeserializeObject<long>(value.Data);
 
                     var post = await _postService.DeletePostAsync(postToFind);
 

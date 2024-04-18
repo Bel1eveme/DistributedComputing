@@ -2,7 +2,7 @@
 
 public class PostKafkaDto
 {
-    public string? Country { get; set; }
+    public string Country { get; set; }
     
     public long StoryId { get; set; }
     
