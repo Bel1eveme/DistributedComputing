@@ -1,4 +1,5 @@
-﻿using Forum.PostApi.Kafka.Messages;
+﻿using Forum.Api.Models.Dto;
+using Forum.PostApi.Kafka.Messages;
 using Forum.PostApi.Models;
 using Forum.PostApi.Models.Dto;
 using Forum.PostApi.Services;
@@ -29,12 +30,17 @@ public class PostKafkaHandler : IKafkaHandler<string, KafkaMessage>
             {
                 try
                 {
-                    var posts = _postService.GetAllPostsAsync();
+                    var posts = await _postService.GetAllPostsAsync();
 
                     message = new KafkaMessage
                     {
                         MessageType = MessageType.GetAll,
-                        Data = JsonConvert.SerializeObject(posts)
+                        Data = JsonConvert.SerializeObject(posts.Select(p => new PostKafkaDto
+                        {
+                            StoryId = p.StoryId,
+                            Id = p.Id,
+                            Content = p.Content
+                        }))
                     };
                 }
                 catch (Exception e)
@@ -56,7 +62,7 @@ public class PostKafkaHandler : IKafkaHandler<string, KafkaMessage>
                 {
                     var postToFind = JsonConvert.DeserializeObject<int>(value.Data);
 
-                    var post = _postService.GetPostAsync(postToFind);
+                    var post = await _postService.GetPostAsync(postToFind);
 
                     message = new KafkaMessage
                     {
@@ -80,7 +86,7 @@ public class PostKafkaHandler : IKafkaHandler<string, KafkaMessage>
             case MessageType.Create:
                 try
                 {
-                    var postToCreate = JsonConvert.DeserializeObject<Post>(value.Data);
+                    var postToCreate = JsonConvert.DeserializeObject<PostKafkaDto>(value.Data);
 
                     var newPost = new PostRequestDto
                     {
@@ -90,12 +96,17 @@ public class PostKafkaHandler : IKafkaHandler<string, KafkaMessage>
                         Content = postToCreate.Content,
                     };
                     
-                    var post = _postService.CreatePostAsync(newPost);
-
+                    var post = await _postService.CreatePostAsync(newPost);
+                    
                     message = new KafkaMessage
                     {
                         MessageType = MessageType.Create,
-                        Data = JsonConvert.SerializeObject(post)
+                        Data = post is null ? null : JsonConvert.SerializeObject(new PostKafkaDto()
+                        {
+                            Id = post.Id,
+                            StoryId = post.StoryId,
+                            Content = post.Content
+                        }),
                     };
                 }
                 catch (Exception e)
@@ -113,14 +124,25 @@ public class PostKafkaHandler : IKafkaHandler<string, KafkaMessage>
             case MessageType.Update:
                 try
                 {
-                    var postToFind = JsonConvert.DeserializeObject<int>(value.Data);
+                    var postToUpdate = JsonConvert.DeserializeObject<PostKafkaDto>(value.Data);
 
-                    var post = _postService.UpdatePostAsync(postToFind);
+                    var post = await _postService.UpdatePostAsync(new PostRequestDto
+                    {
+                        Id = postToUpdate.Id,
+                        Country = postToUpdate.Country,
+                        StoryId = postToUpdate.StoryId,
+                        Content = postToUpdate.Content
+                    });
 
                     message = new KafkaMessage
                     {
-                        MessageType = MessageType.Update,
-                        Data = JsonConvert.SerializeObject(post)
+                        MessageType = MessageType.Create,
+                        Data = post is null ? null : JsonConvert.SerializeObject(new PostKafkaDto
+                        {
+                            Id = post.Id,
+                            StoryId = post.StoryId,
+                            Content = post.Content
+                        }),
                     };
                 }
                 catch (Exception e)
@@ -140,12 +162,17 @@ public class PostKafkaHandler : IKafkaHandler<string, KafkaMessage>
                 {
                     var postToFind = JsonConvert.DeserializeObject<int>(value.Data);
 
-                    var post = _postService.DeletePostAsync(postToFind);
+                    var post = await _postService.DeletePostAsync(postToFind);
 
                     message = new KafkaMessage
                     {
                         MessageType = MessageType.Delete,
-                        Data = JsonConvert.SerializeObject(post)
+                        Data = post is null ? null : JsonConvert.SerializeObject(new PostKafkaDto
+                        {
+                            Id = post.Id,
+                            StoryId = post.StoryId,
+                            Content = post.Content
+                        }),
                     };
                 }
                 catch (Exception e)

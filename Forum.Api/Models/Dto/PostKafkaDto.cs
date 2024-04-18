@@ -1,6 +1,6 @@
 ﻿namespace Forum.Api.Models.Dto;
 
-public class PostKafkaRequestDto
+public class PostKafkaDto
 {
     public string? Country { get; set; }
     

@@ -2,7 +2,7 @@
 
 public class PostResponseDto
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
 
     public string Content { get; set; } = string.Empty;
     

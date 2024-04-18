@@ -1,20 +1,23 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER $APP_UID
 WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Forum.PostApi/Forum.PostApi.csproj", "Forum.PostApi/"]
 RUN dotnet restore "Forum.PostApi/Forum.PostApi.csproj"
 COPY . .
 WORKDIR "/src/Forum.PostApi"
-RUN dotnet build "Forum.PostApi.csproj" -c Release -o /app/build
+RUN dotnet build "Forum.PostApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Forum.PostApi.csproj" -c Release -o /app/publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "Forum.PostApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-
+FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY wait-for-cassandra.sh ./
-RUN chmod +x ./wait-for-cassandra.sh  # Make sure the script is executable
-ENTRYPOINT ["./wait-for-cassandra.sh", "&&", "dotnet", "Forum.PostApi.dll"]
+ENTRYPOINT ["dotnet", "Forum.PostApi.dll"]

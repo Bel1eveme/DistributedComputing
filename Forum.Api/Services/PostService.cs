@@ -56,9 +56,15 @@ public class PostService : IPostService
             throw new KafkaException(kafkaMessage.ErrorMessage);
         }
         
-        var posts = JsonConvert.DeserializeObject<IEnumerable<Post>>(kafkaMessage.Data);
+        var posts = JsonConvert.DeserializeObject<IEnumerable<PostKafkaDto>>(kafkaMessage.Data);
         
-        return _mapper.Map<IEnumerable<PostResponseDto>>(posts);
+        return posts.Select(p => new PostResponseDto
+        {
+            Id = p.Id,
+            Content = p.Content,
+            StoryId = p.StoryId,
+            Story = null,
+        });
     }
 
     public async Task<PostResponseDto?> GetPost(long id)
@@ -85,9 +91,15 @@ public class PostService : IPostService
             throw new KafkaException(kafkaMessage.ErrorMessage);
         }
         
-        var posts = JsonConvert.DeserializeObject<Post>(kafkaMessage.Data);
+        var post = JsonConvert.DeserializeObject<PostKafkaDto>(kafkaMessage.Data);
         
-        return _mapper.Map<PostResponseDto>(posts);
+        return new PostResponseDto
+        {
+            Id = post.Id,
+            Content = post.Content,
+            StoryId = post.StoryId,
+            Story = null,
+        };
     }
 
     public async Task<PostResponseDto> CreatePost(PostRequestDto postRequestDto)
@@ -104,7 +116,12 @@ public class PostService : IPostService
         postRequestDto.Id = newId;
         var tcs = new TaskCompletionSource<KafkaMessage>();
         _responseCompletionSources.TryAdd(requestKey, tcs);
-        var newPost = _mapper.Map<Post>(postRequestDto);
+        PostKafkaDto newPost = new PostKafkaDto
+        {
+            Id = postRequestDto.Id,
+            Content = postRequestDto.Content,
+            StoryId = postRequestDto.StoryId,
+        };
 
         var message = new KafkaMessage
         {
@@ -124,9 +141,15 @@ public class PostService : IPostService
             throw new KafkaException(kafkaMessage.ErrorMessage);
         }
         
-        var post = JsonConvert.DeserializeObject<Post>(kafkaMessage.Data);
+        var post = JsonConvert.DeserializeObject<PostKafkaDto>(kafkaMessage.Data);
         
-        return _mapper.Map<PostResponseDto>(post);
+        return new PostResponseDto
+        {
+            Id = post.Id,
+            Content = post.Content,
+            StoryId = post.StoryId,
+            Story = null,
+        };
     }
 
     public async Task<PostResponseDto?> UpdatePost(PostRequestDto postRequestDto)
@@ -141,7 +164,12 @@ public class PostService : IPostService
         var requestKey = Guid.NewGuid().ToString();
         var tcs = new TaskCompletionSource<KafkaMessage>();
         _responseCompletionSources.TryAdd(requestKey, tcs);
-        var updatedPost = _mapper.Map<Post>(postRequestDto);
+        PostKafkaDto updatedPost = new PostKafkaDto
+            {
+                Id = postRequestDto.Id,
+                Content = postRequestDto.Content,
+                StoryId = postRequestDto.StoryId,
+            };
 
         var message = new KafkaMessage
         {
@@ -161,9 +189,15 @@ public class PostService : IPostService
             throw new KafkaException(kafkaMessage.ErrorMessage);
         }
         
-        var post = JsonConvert.DeserializeObject<Post>(kafkaMessage.Data);
+        var post = JsonConvert.DeserializeObject<PostKafkaDto>(kafkaMessage.Data);
         
-        return _mapper.Map<PostResponseDto>(post);
+        return new PostResponseDto
+        {
+            Id = post.Id,
+            Content = post.Content,
+            StoryId = post.StoryId,
+            Story = null,
+        };
     }
 
     public async Task<PostResponseDto?> DeletePost(long id)
@@ -190,8 +224,14 @@ public class PostService : IPostService
             throw new KafkaException(kafkaMessage.ErrorMessage);
         }
         
-        var post = JsonConvert.DeserializeObject<Post>(kafkaMessage.Data);
+        var post = JsonConvert.DeserializeObject<PostKafkaDto>(kafkaMessage.Data);
         
-        return _mapper.Map<PostResponseDto>(post);
+        return new PostResponseDto
+        {
+            Id = post.Id,
+            Content = post.Content,
+            StoryId = post.StoryId,
+            Story = null,
+        };
     }
 }
