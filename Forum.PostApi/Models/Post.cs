@@ -7,7 +7,7 @@ namespace Forum.PostApi.Models;
 public class Post : BaseModel<long>
 {
     [PartitionKey]
-    public String Country { get; set; }
+    public string Country { get; set; }
     
     [ClusteringKey]
     public long StoryId { get; set; }

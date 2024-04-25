@@ -5,7 +5,7 @@ namespace Forum.PostApi.Models.Dto;
 
 public class PostRequestDto : BaseModel<long>
 {
-    public String Country { get; set; }
+    public string? Country { get; set; }
     
     public long StoryId { get; set; }
     

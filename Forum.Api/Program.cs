@@ -1,5 +1,10 @@
+using System.Collections.Concurrent;
 using FluentValidation;
 using Forum.Api;
+using Forum.Api.Kafka;
+using Forum.Api.Kafka.Consumer;
+using Forum.Api.Kafka.Messages;
+using Forum.Api.Models.Dto;
 using Forum.Api.Repositories;
 using Forum.Api.Services;
 using Forum.Api.Validation;
@@ -19,6 +24,7 @@ builder.Services.AddDbContext<AppDbContext>(
 builder.Services.AddScoped<ICreatorRepository, CreatorRepository>();
 builder.Services.AddScoped<ICreatorService, CreatorService>();
 
+
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IPostService, PostService>();
 
@@ -28,11 +34,35 @@ builder.Services.AddScoped<IStoryService, StoryService>();
 builder.Services.AddScoped<ITagRepository, TagRepository>();
 builder.Services.AddScoped<ITagService, TagService>();
 
+//builder.Services.Decorate<IPostRepository, CachedPostRepository>();
+//builder.Services.Decorate<ITagRepository, CachedTagRepository>();
+//builder.Services.Decorate<IStoryRepository, CachedStoryRepository>();
+//builder.Services.Decorate<ICreatorRepository, CachedCreatorRepository>();
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+});
+
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddAutoMapper(typeof(AppMappingProfile));
 builder.Services.AddValidatorsFromAssemblyContaining<CreatorRequestDtoValidator>();
 
+builder.Services.AddSingleton(typeof(MessageManager<,>));
+
+builder.Services.AddKafkaMessageBus();
+builder.Services.AddKafkaProducer<string, KafkaMessage>(config => {
+    config.Topic = "in-topic";
+    config.BootstrapServers = "localhost:9092";
+});
+builder.Services.AddSingleton(new ConcurrentDictionary<string, TaskCompletionSource<KafkaMessage>>());
+builder.Services.AddKafkaConsumer<string, KafkaMessage, PostKafkaHandler>(p =>
+{
+    p.Topic = "out-topic";
+    p.GroupId = "posts-group";
+    p.BootstrapServers = "localhost:9092";
+});
 
 var app = builder.Build();
 

@@ -4,7 +4,7 @@ namespace Forum.Api.Services;
 
 public interface IPostService
 {
-    public Task<List<PostResponseDto>> GetAllPosts();
+    public Task<IEnumerable<PostResponseDto>> GetAllPosts();
 
     public Task<PostResponseDto?> GetPost(long id);
     

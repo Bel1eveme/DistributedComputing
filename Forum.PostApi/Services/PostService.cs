@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Forum.PostApi.Extensions;
 using Forum.PostApi.Models;
 using Forum.PostApi.Models.Dto;
 using Forum.PostApi.Repositories;
@@ -11,11 +12,14 @@ public class PostService : IPostService
     private readonly IPostRepository _postRepository; 
 
     private readonly IValidator<PostRequestDto> _validator;
+    
+    private readonly CassandraOptions _cassandraOptions;
 
-    public PostService(IPostRepository postRepository, IValidator<PostRequestDto> validator)
+    public PostService(IPostRepository postRepository, IValidator<PostRequestDto> validator, CassandraOptions cassandraOptions)
     {
         _postRepository = postRepository;
         _validator = validator;
+        _cassandraOptions = cassandraOptions;
     }
 
     public async Task<IEnumerable<PostResponseDto>> GetAllPostsAsync()
@@ -39,6 +43,8 @@ public class PostService : IPostService
             throw new ValidationException(validationResult.Errors.FirstOrDefault()?.ErrorMessage);
         }
         
+        postRequestDto.Country ??= _cassandraOptions.DefaultPartitionKey;
+        
         var postModel = MapperHelper.DtoToPost(postRequestDto);
         
         var post = await _postRepository.AddAsync(postModel);
@@ -48,6 +54,8 @@ public class PostService : IPostService
 
     public async Task<PostResponseDto?> UpdatePostAsync(PostRequestDto postRequestDto)
     {
+        postRequestDto.Country ??= _cassandraOptions.DefaultPartitionKey;
+        
         var postModel = MapperHelper.DtoToPost(postRequestDto);
         
         var post = await _postRepository.UpdateAsync(postModel);
