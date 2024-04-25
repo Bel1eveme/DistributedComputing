@@ -63,9 +63,9 @@ services:
       - forum-post-api-network
     restart: unless-stopped
     
-  broker:
+  kafka:
     image: confluentinc/cp-server:7.5.0
-    container_name: broker
+    container_name: KafkaContainer
     ports:
       - "9092:9092"
     environment:
@@ -88,6 +88,13 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      
+  distributedcache:
+    container_name: distributedcache
+    image: redis
+    restart: always
+    ports:
+      - "6379:6379"
 
 networks:
   forum-api-network:
